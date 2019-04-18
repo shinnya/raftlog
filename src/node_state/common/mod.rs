@@ -276,6 +276,7 @@ where
             //  リーダ以外は、クラスタの構成変更を跨いで再起動が発生した場合に、
             //  停止時には知らなかった新構成を把握するために、
             //  不明なノードからもメッセージも受信する必要がある.
+            println!("不明なノードからのメッセージは無視: node={:?}", self.local_node.id);
             HandleMessageResult::Handled(None)
         } else if message.header().term > self.local_node.ballot.term {
             // b) 相手のtermの方が大きい => 新しい選挙が始まっているので追従する
@@ -296,19 +297,24 @@ where
                     // 送信者(候補者)のログは十分に新しいので、その人を支持する
                     let candidate = m.header.sender.clone();
                     self.unread_message = Some(Message::RequestVoteCall(m));
+                    println!("送信者が新しい: node={:?}, ballot={:?}", self.local_node.id, self.local_node.ballot);
                     self.transit_to_follower(candidate)
                 } else {
                     // ローカルログの方が新しいので、自分で立候補する
+                    println!("自分で立候補: node={:?}", self.local_node.id);
                     self.transit_to_candidate()
                 }
             } else if let Message::AppendEntriesCall { .. } = message {
                 // 新リーダが当選していたので、その人のフォロワーとなる
                 let leader = message.header().sender.clone();
                 self.unread_message = Some(message);
+                println!("新リーダーが当選していたのでフォロー先を変更: node={:?}, ballot={:?}", self.local_node.id, self.local_node.ballot);
                 self.transit_to_follower(leader)
             } else if self.local_node.role == Role::Leader {
+                println!("リーダーなので候補者になる: node={:?}, ballot={:?}", self.local_node.id, self.local_node.ballot);
                 self.transit_to_candidate()
             } else {
+                println!("フォロワーになる: node={:?}, ballot={:?}", self.local_node.id, self.local_node.ballot);
                 let local = self.local_node.id.clone();
                 self.transit_to_follower(local)
             };
@@ -323,15 +329,19 @@ where
             // d) 同じ選挙期間に属するノードからのメッセージ
             match message {
                 Message::RequestVoteCall { .. } if !self.is_following_sender(&message) => {
+                    println!("同じ期間: sender={:?}", message.header().sender);
                     // 別の人をフォロー中に投票依頼が来た場合ので拒否
                     self.rpc_callee(message.header()).reply_request_vote(false);
+                    println!("別の人をフォロー中なので拒否: node={:?}, ballot={:?}", self.local_node.id, self.local_node.ballot);
                     HandleMessageResult::Handled(None)
                 }
                 Message::AppendEntriesCall { .. } if !self.is_following_sender(&message) => {
+                    println!("同じ期間: sender={:?}", message.header().sender);
                     // リーダが確定したので、フォロー先を変更する
                     let leader = message.header().sender.clone();
                     self.unread_message = Some(message);
                     let next = self.transit_to_follower(leader);
+                    println!("リーダーが確定したのでフォロー先を変更: node={:?}, ballot={:?}", self.local_node.id, self.local_node.ballot);
                     HandleMessageResult::Handled(Some(next))
                 }
                 _ => HandleMessageResult::Unhandled(message), // 個別のロールに処理を任せる
@@ -410,7 +420,8 @@ where
                 // この立候補は即座に成功するはず.
                 Some(self.transit_to_candidate())
             } else {
-                None
+                //self.local_node.ballot.voted_for = successor.clone();
+                Some(self.transit_to_follower(successor.clone()))
             }
         } else {
             None
