@@ -291,6 +291,8 @@ where
                 return HandleMessageResult::Handled(None);
             }
 
+            println!("sender > local: sender={:?}", message.header().sender);
+
             self.local_node.ballot.term = message.header().term;
             let next_state = if let Message::RequestVoteCall(m) = message {
                 if m.log_tail.is_newer_or_equal_than(self.history.tail()) {
