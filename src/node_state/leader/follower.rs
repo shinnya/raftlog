@@ -99,7 +99,7 @@ impl<IO: Io> FollowersManager<IO> {
 
     pub fn handle_append_entries_reply(
         &mut self,
-        common: &Common<IO>,
+        common: &mut Common<IO>,
         reply: &AppendEntriesReply,
     ) -> bool {
         let updated = self.update_follower_state(common, reply);
@@ -169,7 +169,7 @@ impl<IO: Io> FollowersManager<IO> {
         self.config = config.clone();
     }
 
-    fn update_follower_state(&mut self, common: &Common<IO>, reply: &AppendEntriesReply) -> bool {
+    fn update_follower_state(&mut self, common: &mut Common<IO>, reply: &AppendEntriesReply) -> bool {
         let follower = &mut self
             .followers
             .get_mut(&reply.header.sender)
@@ -187,6 +187,13 @@ impl<IO: Io> FollowersManager<IO> {
                     // NOTE: followerのデータがクリアされたものと判断する
                     // FIXME: ちゃんとした実装にする(e.g., ノードに再起動毎に替わるようなIDを付与して、その一致を確認する)
                     follower.synced = false;
+                    common.notify_inconsistent_follower(
+                        reply.header.sender.clone(),
+                        follower.obsolete_seq_no,
+                        follower.last_seq_no,
+                        follower.log_tail,
+                        log_tail.index,
+                    );
                 }
                 updated
             }

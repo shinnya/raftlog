@@ -284,6 +284,22 @@ where
         Ok(())
     }
 
+    pub fn notify_inconsistent_follower(&mut self,
+                                        follower: NodeId,
+                                        obsolete_seq_no: SequenceNumber,
+                                        last_seq_no: SequenceNumber,
+                                        old_log_tail: LogIndex,
+                                        new_log_tail: LogIndex,
+    ) {
+        self.events.push_back(Event::InconsistentFollowerDetected {
+            follower,
+            obsolete_seq_no,
+            last_seq_no,
+            old_log_tail,
+            new_log_tail,
+        });
+    }
+
     /// 受信メッセージに対する共通的な処理を実行する.
     pub fn handle_message(&mut self, message: Message) -> HandleMessageResult<IO> {
         if self.local_node.role == Role::Leader

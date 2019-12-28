@@ -321,4 +321,12 @@ pub enum Event {
     /// もし`new_head`の位置が、最新のコミット済み地点よりも
     /// 新しい場合には、これとは別に`SnapshotLoaded`イベントが発行される.
     SnapshotInstalled { new_head: LogPosition },
+
+    InconsistentFollowerDetected {
+        follower: NodeId,
+        obsolete_seq_no: SequenceNumber,
+        last_seq_no: SequenceNumber,
+        old_log_tail: LogIndex,
+        new_log_tail: LogIndex,
+    },
 }
