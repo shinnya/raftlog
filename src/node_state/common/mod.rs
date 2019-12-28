@@ -128,6 +128,7 @@ where
         track!(self.history.record_snapshot_loaded(&prefix))?;
         let event = Event::SnapshotLoaded {
             new_head: prefix.tail,
+            voted_for: prefix.voted_for,
             snapshot: prefix.snapshot,
         };
         self.metrics.event_queue_len.increment();
@@ -489,6 +490,7 @@ mod tests {
             tail: LogPosition::default(),
             config: cluster.clone(),
             snapshot: Vec::default(),
+            voted_for: None,
         };
 
         assert!(!common.is_snapshot_installing());
@@ -517,6 +519,7 @@ mod tests {
             },
             config: cluster.clone(),
             snapshot: vec![0],
+            voted_for: None,
         };
         let log_suffix = LogSuffix {
             head: LogPosition {
@@ -546,6 +549,7 @@ mod tests {
             },
             config: cluster.clone(),
             snapshot: vec![1],
+            voted_for: None,
         };
 
         assert!(!common.is_focusing_on_installing_snapshot());

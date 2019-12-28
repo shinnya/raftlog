@@ -191,6 +191,7 @@ impl<IO: Io> ReplicatedLog<IO> {
             },
             config,
             snapshot,
+            voted_for: Some(self.local_node().ballot.voted_for.clone()),
         };
         track!(self.node.common.install_snapshot(prefix))?;
         Ok(())
@@ -308,6 +309,7 @@ pub enum Event {
     /// `snapshot`の状態にリセットする必要がある.
     SnapshotLoaded {
         new_head: LogPosition,
+        voted_for: Option<NodeId>,
         snapshot: Vec<u8>,
     },
 

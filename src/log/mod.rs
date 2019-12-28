@@ -5,6 +5,7 @@ pub use self::history::{HistoryRecord, LogHistory};
 
 use cluster::ClusterConfig;
 use election::Term;
+use node::NodeId;
 use {ErrorKind, Result};
 
 mod history;
@@ -42,6 +43,9 @@ pub struct LogPrefix {
 
     /// 前半部分に含まれるコマンド群の適用後の状態機械のスナップショット.
     pub snapshot: Vec<u8>,
+
+    /// 投票先.
+    pub voted_for: Option<NodeId>,
 }
 
 /// ログの後半部分.
