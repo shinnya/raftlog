@@ -172,16 +172,16 @@ impl<IO: Io> FollowersManager<IO> {
         if follower.last_seq_no < reply.header.seq_no {
             follower.last_seq_no = reply.header.seq_no;
         }
+        // NOTE: followerのデータがクリアされたものと判断する
+        // FIXME: ちゃんとした実装にする(e.g., ノードに再起動毎に替わるようなIDを付与して、その一致を確認する)
+        follower.synced = follower.last_instance_id == reply.instance_id;
+        follower.last_instance_id = reply.instance_id.clone();
         match *reply {
             AppendEntriesReply { busy: true, .. } => false,
             AppendEntriesReply { log_tail, .. } if follower.synced => {
                 let updated = follower.log_tail < log_tail.index;
                 if updated {
                     follower.log_tail = log_tail.index;
-                } else if log_tail.index.as_u64() == 0 && follower.log_tail.as_u64() != 0 {
-                    // NOTE: followerのデータがクリアされたものと判断する
-                    // FIXME: ちゃんとした実装にする(e.g., ノードに再起動毎に替わるようなIDを付与して、その一致を確認する)
-                    follower.synced = false;
                 }
                 updated
             }
@@ -208,6 +208,7 @@ struct Follower {
 
     pub log_tail: LogIndex,
     pub last_seq_no: SequenceNumber,
+    pub last_instance_id: String,
     pub synced: bool,
 }
 impl Follower {
@@ -217,6 +218,7 @@ impl Follower {
 
             log_tail: LogIndex::new(0),
             last_seq_no: SequenceNumber::new(0),
+            last_instance_id: String::default(),
             synced: false,
         }
     }

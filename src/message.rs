@@ -145,6 +145,9 @@ pub struct AppendEntriesReply {
     /// followerの`log_tail`が遅れていたとしても、
     /// リーダはログの同期のための追加のメッセージ送信を行わない.
     pub busy: bool,
+
+    /// instance_id
+    pub instance_id: String,
 }
 
 /// `InstallSnapshotRPC`用のメッセージ.

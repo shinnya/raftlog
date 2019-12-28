@@ -13,6 +13,7 @@ use message::{Message, MessageHeader, SequenceNumber};
 use metrics::NodeStateMetrics;
 use node::{Node, NodeId};
 use {Error, ErrorKind, Event, Io, Result};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 mod rpc_builder;
 
@@ -42,8 +43,9 @@ where
     ) -> Self {
         // 最初は（仮に）フォロワーだとしておく
         let timeout = io.create_timeout(Role::Follower);
+        let instance_id = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis().to_string();
         Common {
-            local_node: Node::new(node_id),
+            local_node: Node::new(node_id, instance_id),
             io,
             history: LogHistory::new(config),
             unread_message: None,

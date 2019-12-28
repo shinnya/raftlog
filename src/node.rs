@@ -47,6 +47,9 @@ pub struct Node {
 
     /// 現在の選挙における投票状況.
     pub ballot: Ballot,
+
+    /// 識別子.
+    pub instance_id: String,
 }
 impl Node {
     // 初期状態の`Node`インスタンスを生成する.
@@ -63,7 +66,7 @@ impl Node {
     // assert_eq!(n.ballot.term.as_u64(), 0);
     // assert_eq!(n.ballot.voted_for.as_str(), "foo");
     // ```
-    pub(crate) fn new(node_id: NodeId) -> Self {
+    pub(crate) fn new(node_id: NodeId, instance_id: String) -> Self {
         Node {
             id: node_id.clone(),
             role: Role::Follower,
@@ -71,6 +74,7 @@ impl Node {
                 term: 0.into(),
                 voted_for: node_id,
             },
+            instance_id,
         }
     }
 }

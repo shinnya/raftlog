@@ -39,6 +39,7 @@ impl<'a, IO: 'a + Io> RpcCaller<'a, IO> {
             header,
             log_tail: self.common.history.tail(),
             busy: false,
+            instance_id: self.common.local_node.instance_id.clone(),
         }
         .into();
         self.broadcast(request, self_reply);
@@ -103,6 +104,7 @@ impl<'a, IO: 'a + Io> RpcCallee<'a, IO> {
             header: self.make_header(),
             log_tail,
             busy: false,
+            instance_id: self.common.local_node.instance_id.clone(),
         }
         .into();
         self.common.io.send_message(message);
@@ -112,6 +114,7 @@ impl<'a, IO: 'a + Io> RpcCallee<'a, IO> {
             header: self.make_header(),
             log_tail: self.common.history.tail(),
             busy: true,
+            instance_id: self.common.local_node.instance_id.clone(),
         }
         .into();
         self.common.io.send_message(message);
