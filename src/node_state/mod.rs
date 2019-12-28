@@ -6,6 +6,7 @@ pub use self::common::Common;
 use self::candidate::Candidate;
 use self::common::HandleMessageResult;
 use self::follower::Follower;
+pub use self::leader::Followers;
 use self::leader::Leader;
 use self::loader::Loader;
 use cluster::ClusterConfig;
@@ -192,6 +193,13 @@ pub enum RoleState<IO: Io> {
 }
 
 impl<IO: Io> RoleState<IO> {
+    pub fn followers(&self) -> Followers {
+        if let RoleState::Leader(leader) = self {
+            return leader.followers();
+        }
+        Default::default()
+    }
+
     /// Returns true if this role state is `Loader`.
     pub fn is_loader(&self) -> bool {
         if let RoleState::Loader(_) = self {

@@ -1,4 +1,5 @@
 use self::appender::LogAppender;
+pub use self::follower::Followers;
 use self::follower::FollowersManager;
 use super::{Common, NextState};
 use election::Role;
@@ -102,6 +103,9 @@ impl<IO: Io> Leader<IO> {
         track!(self.handle_change_config(common))?;
         track!(self.followers.run_once(common))?;
         Ok(None)
+    }
+    pub fn followers(&self) -> Followers {
+        self.followers.followers()
     }
     pub fn propose(&mut self, common: &mut Common<IO>, entry: LogEntry) -> ProposalId {
         let proposal_id = self.next_proposal_id(common);

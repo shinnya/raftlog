@@ -57,6 +57,11 @@ impl<IO: Io> FollowersManager<IO> {
         }
         Ok(())
     }
+    pub fn followers(&self) -> Followers {
+        Followers {
+            inner: self.followers.clone(),
+        }
+    }
     pub fn latest_hearbeat_ack(&self) -> SequenceNumber {
         self.latest_hearbeat_ack
     }
@@ -202,7 +207,7 @@ impl<IO: Io> FollowersManager<IO> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Follower {
     pub obsolete_seq_no: SequenceNumber,
 
@@ -218,6 +223,18 @@ impl Follower {
             log_tail: LogIndex::new(0),
             last_seq_no: SequenceNumber::new(0),
             synced: false,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Followers {
+    inner: BTreeMap<NodeId, Follower>,
+}
+impl Default for Followers {
+    fn default() -> Self {
+        Self {
+            inner: BTreeMap::new(),
         }
     }
 }

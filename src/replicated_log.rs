@@ -10,7 +10,7 @@ use log::{LogEntry, LogHistory, LogIndex, LogPosition, LogPrefix, ProposalId};
 use message::SequenceNumber;
 use metrics::RaftlogMetrics;
 use node::{Node, NodeId};
-use node_state::{NodeState, RoleState};
+use node_state::{Followers, NodeState, RoleState};
 use {Error, ErrorKind, Result};
 
 /// Raftアルゴリズムに基づく分散複製ログ.
@@ -211,6 +211,11 @@ impl<IO: Io> ReplicatedLog<IO> {
     /// ローカルログの履歴を返す.
     pub fn local_history(&self) -> &LogHistory {
         self.node.common.log()
+    }
+
+    /// フォロワー状態を返す.
+    pub fn followers(&self) -> Followers {
+        self.node.role.followers()
     }
 
     /// ローカルログへの書き込み待ちの状態の提案群の数を返す.
